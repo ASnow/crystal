@@ -25,6 +25,38 @@ module FileUtils
   def cd(path : String)
     Dir.cd(path) { yield }
   end
+  
+  # Changes permission bits on the named files (in list) to the bit pattern represented by mode.
+  #
+  # ```
+  # require "file_utils"
+  #
+  # FileUtils.chmod(0o700, "foo", "bar")
+  #
+  # files = {"foo", "bar"}
+  # FileUtils.chmod(0o700, *files)
+  # ```
+  #
+  # NOTE: Alias of `Dir.cd`
+  def chmod(mode : Int, *paths: String) : Nil
+    paths.each do |path|
+      File.chmod(path, mode)
+    end
+  end
+  
+  # Changes owner and group on the named files (in list) to the user user and the group group. 
+  # user and group may be an ID (Integer/String) or a name (String). If user or group is nil, 
+  # this method does not change the attribute.
+  #
+  # ```
+  # File.chown(gid: 100, "foo", "bar")                        # changes foo's gid
+  # File.chown(gid: 100, "foo", "bar", follow_symlinks: true) # changes baz's gid
+  # ```
+  def chown(uid : Int = -1, gid : Int = -1, *paths: String, follow_symlinks = false)
+    paths.each do |path|
+      File.chown(path, uid, gid, follow_symlinks)
+    end
+  end
 
   # Compares two files *filename1* to *filename2* to determine if they are identical.
   # Returns `true` if content are the same, `false` otherwise.
@@ -67,35 +99,7 @@ module FileUtils
     end
   end
 
-  # Attempts to set the access and modification times of the file named
-  # in the *path* parameter to the value given in *time*.
-  #
-  # If the file does not exist, it will be created.
-  #
-  # ```
-  # FileUtils.touch("afile.cr")
-  # ```
-  #
-  # NOTE: Alias of `File.touch`
-  def touch(path : String, time : Time = Time.now)
-    File.touch(path, time)
-  end
-
-  # Attempts to set the access and modification times of each file given
-  # in the *paths* parameter to the value given in *time*.
-  #
-  # If the file does not exist, it will be created.
-  #
-  # ```
-  # FileUtils.touch(["foo", "bar"])
-  # ```
-  def touch(paths : Enumerable(String), time : Time = Time.now)
-    paths.each do |path|
-      touch(path, time)
-    end
-  end
-
-  # Copies the file *src_path* to the file or directory *dest*.
+# Copies the file *src_path* to the file or directory *dest*.
   # If *dest* is a directory, a file with the same basename as *src_path* is created in *dest*
   # Permission bits are copied too.
   #
@@ -337,6 +341,34 @@ module FileUtils
   def rmdir(paths : Enumerable(String)) : Nil
     paths.each do |path|
       Dir.rmdir(path)
+    end
+  end
+
+  # Attempts to set the access and modification times of the file named
+  # in the *path* parameter to the value given in *time*.
+  #
+  # If the file does not exist, it will be created.
+  #
+  # ```
+  # FileUtils.touch("afile.cr")
+  # ```
+  #
+  # NOTE: Alias of `File.touch`
+  def touch(path : String, time : Time = Time.now)
+    File.touch(path, time)
+  end
+
+  # Attempts to set the access and modification times of each file given
+  # in the *paths* parameter to the value given in *time*.
+  #
+  # If the file does not exist, it will be created.
+  #
+  # ```
+  # FileUtils.touch(["foo", "bar"])
+  # ```
+  def touch(paths : Enumerable(String), time : Time = Time.now)
+    paths.each do |path|
+      touch(path, time)
     end
   end
 end
